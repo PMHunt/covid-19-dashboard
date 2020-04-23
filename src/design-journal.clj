@@ -40,3 +40,15 @@
                       :type "nominal"}}})
 
 (oz/view! stacked-bar)
+
+;; now lets use Hiccup style syntax to define a dashboard using these views
+
+(def dashboard
+  [:div
+   [:h1 "Covid19 Tracker - mock data"]
+   [:p "mock data to experiment with different views"]
+   [:div {:style {:display "flex" :flex-direction "column"}}
+    [:vega-lite line-plot]
+    [:vega-lite stacked-bar]]])
+
+(oz/view! dashboard)

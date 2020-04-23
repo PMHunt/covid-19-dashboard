@@ -2,7 +2,7 @@
  :deps {org.clojure/clojure {:mvn/version "1.10.1"}
         metasoarous/oz {:mvn/version "1.6.0-alpha6"}
         org.clojure/data.csv {:mvn/version "1.0.0"}
-                                        ;semantic-csv {:mvn "0.2.1-alpha1"}
+       ;;  semantic-csv {:mvn "0.2.1-alpha1"}
         }
 
  :aliases

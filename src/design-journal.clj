@@ -1,4 +1,4 @@
-(ns PMHunt.design-journal
+(ns PMHunt.covid19-dashboard
   (:require [oz.core :as oz]))
 
 (oz/start-server!)
@@ -33,6 +33,7 @@
 
 (oz/view! stacked-bar)
 
+
 ;; load some example vega
 ;; (this may only work from within a checkout of oz haven't checked)
 
@@ -43,3 +44,16 @@
 (oz/view! contour-plot :mode :vega)
 
 ;; end Oz examples
+
+(defn mock-data-set
+  "generates some mock data for each location name
+
+  Arguments: names as strings, names used as keys
+  Returns: sequence of maps, each representing confirmed cases"
+  [& locations]
+  (for [location locations
+        day (range 20)]
+    {:day day
+     :location location
+     :cases (+ (Math/pow (* day (count location)) 0.8)
+               (rand-int (count location)))}))

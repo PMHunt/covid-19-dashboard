@@ -1,5 +1,6 @@
 (ns PMHunt.covid19-dashboard
-  (:require [oz.core :as oz]))
+  (:require [oz.core :as oz]
+            [clojure.string :as s]))
 
 (oz/start-server!)
 
@@ -231,31 +232,59 @@
 
 (oz/view! dashboard-headlines)
 
+(defn fix-blank-day [v]
+  (if (s/blank? (nth v 4)) (assoc v 4 "0") v))
 
-(def covid-uk-deaths-map
+(defn fix-blank-cum [v]
+  (if (s/blank? (nth v 5)) (assoc v 5 "0") v))
+
+(defn fix-blanks-day [data]
+  (map fix-blank-day data))
+
+(defn fix-blanks-cum [data]
+  (map fix-blank-cum data))
+
+(def covid-uk-deaths-noblanks
+  (fix-blanks-day (fix-blanks-cum covid-uk-deaths)))
+
+(def covid-uk-deaths-num
+  (map (fn [[an ac at rd dhd chd]]
+         [an ac at rd (Long/parseLong dhd) (Long/parseLong chd)])
+       (rest covid-uk-deaths-noblanks)))
+
+(def covid-uk-deaths-zip
   (for [x (range (count covid-uk-deaths))]
-    (zipmap (first covid-uk-deaths) (nth covid-uk-deaths x))))
+    (zipmap (first covid-uk-deaths) (nth covid-uk-deaths-num x))))
 
 
-(def covid-uk-cases-map
-  (for [x (range (count covid-uk-cases))]
-    (zipmap (first covid-uk-cases) (nth covid-uk-cases x))))
 
-(def covid-uk-deaths-map-num
-  (map (fn [[area-name area-code area-type reporting-date daily-hospital-deaths cumulative-hospital-deaths]]
-         [area-name area-code area-type reporting-date (Long/parseLong daily-hospital-deaths) (Long/parseLong cumulative-hospital-deaths)])))
 
 
 (oz/start-server!)
 
 
+;; TODO figure out how to deal with date strings
 (def line-plot-real-deaths
-  {:data {:values covid-uk-deaths-map-num}
-   :encoding {:x {:timeUnit "date" :field "Reporting date" :type "temporal"}
+  {:data {:values (take 100 covid-uk-deaths-zip)}
+   :encoding {:x {:field "Reporting date" :timeUnit "date" :type "temporal"}
               :y {:field "Daily hospital deaths" :type "quantitative"}
               :color {:field "Area name" :type "nominal"}}
    :mark "line"})
 
 ;; Render the plot
-;; todo, figure out how to deal with date strings
 (oz/view! line-plot-real-deaths)
+
+
+(def stacked-bar
+  {:data {:values covid-uk-deaths-zip}
+   :mark "bar"
+   :encoding {:x {:field "Reporting date"
+                  :timeUnit "date"
+                  :type "temporal"}
+              :y {:aggregate "Area name"
+                  :field "Daily hospital deaths"
+                  :type "quantitative"}
+              :color {:field "Area name"
+                      :type "nominal"}}})
+
+(oz/view! stacked-bar)
